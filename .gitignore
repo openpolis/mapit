@@ -1,5 +1,6 @@
 *.pyc
 .idea
+.vagrant
 /conf/general.yml
 /conf/general.yml.deployed
 /conf/httpd.conf
