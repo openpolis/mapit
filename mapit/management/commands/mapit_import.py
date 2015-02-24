@@ -42,10 +42,22 @@ class Command(LabelCommand):
             help='Which country should be used',
         ),
         make_option(
+            '--country_name',
+            action="store",
+            dest='country_name',
+            help='Specify the extended country name (first time)',
+        ),
+        make_option(
             '--area_type_code',
             action="store",
             dest='area_type_code',
             help='Which area type should be used (specify using code)',
+        ),
+        make_option(
+            '--area_type_descr',
+            action="store",
+            dest='area_type_descr',
+            help='Specify area type description (if first time)',
         ),
         make_option(
             '--name_type_code',
@@ -54,10 +66,22 @@ class Command(LabelCommand):
             help='Which name type should be used (specify using code)',
         ),
         make_option(
+            '--name_type_descr',
+            action="store",
+            dest='name_type_descr',
+            help='Specify name type description (if first time)',
+        ),
+        make_option(
             '--code_type',
             action="store",
             dest='code_type',
             help='Which code type should be used (specify using its code)',
+        ),
+        make_option(
+            '--code_type_descr',
+            action="store",
+            dest='code_type_descr',
+            help='Specify code type description (if first time)',
         ),
         make_option(
             '--name_field',
@@ -156,7 +180,11 @@ class Command(LabelCommand):
         try:
             area_type = Type.objects.get(code=area_type_code)
         except:
-            type_desc = input('Please give a description for area type code %s: ' % area_type_code)
+            if 'area_type_descr' in options:
+                type_desc = options['area_type_descr']
+            else:
+                type_desc = input('Please give a description for area type code %s: ' % area_type_code)
+
             area_type = Type(code=area_type_code, description=type_desc)
             if options['commit']:
                 area_type.save()
@@ -164,7 +192,10 @@ class Command(LabelCommand):
         try:
             name_type = NameType.objects.get(code=name_type_code)
         except:
-            name_desc = input('Please give a description for name type code %s: ' % name_type_code)
+            if 'name_type_descr' in options:
+                name_desc = options['name_type_descr']
+            else:
+                name_desc = input('Please give a description for name type code %s: ' % name_type_code)
             name_type = NameType(code=name_type_code, description=name_desc)
             if options['commit']:
                 name_type.save()
@@ -172,7 +203,10 @@ class Command(LabelCommand):
         try:
             country = Country.objects.get(code=country_code)
         except:
-            country_name = input('Please give the name for country code %s: ' % country_code)
+            if 'country_name' in options:
+                country_name = options['country_name']
+            else:
+                country_name = input('Please give the name for country code %s: ' % country_code)
             country = Country(code=country_code, name=country_name)
             if options['commit']:
                 country.save()
@@ -181,7 +215,10 @@ class Command(LabelCommand):
             try:
                 code_type = CodeType.objects.get(code=code_type_code)
             except:
-                code_desc = input('Please give a description for code type %s: ' % code_type_code)
+                if 'code_type_descr' in options:
+                    code_desc = options['code_type_descr']
+                else:
+                    code_desc = input('Please give a description for code type %s: ' % code_type_code)
                 code_type = CodeType(code=code_type_code, description=code_desc)
                 if options['commit']:
                     code_type.save()
