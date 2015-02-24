@@ -17,6 +17,26 @@ MapIt can be installed as a Django app, or as a standalone server. For full
 details, please see our site at http://code.mapit.mysociety.org/ for help
 and documentation.
 
+Vagrant installation
+--------------------
+A Vagrantfile is provided, so that you can install a virtual box running mapit on
+your local machine, simply by running ``vagrant up``.
+
+In case you are fortunate enough to own a Vmware Fusion plugin license,
+you can use ``vagrant up --provider=vmware_fusion``. That should help a lot
+with folder shares, and efficiency in general.
+
+Otherwise, you should change the default shared folder instructions, in order
+to use NFS::
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder ".", "/home/mapit", created: true, type: "nfs"
+
+Please, see https://docs.vagrantup.com/v2/synced-folders/nfs.html for advanced details.
+
+Vagrant box is provisioned through the ``conf/boostrap.sh`` script, that performs all
+ the steps necessary to install and configure the right packages.
+
 Examples
 --------
 

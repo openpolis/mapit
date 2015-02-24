@@ -7,6 +7,8 @@
 /conf/httpd.conf.deployed
 /web/down.html
 /data/cache
+/data/cache-with-political
+/data/new-cache
 /MANIFEST
 /build
 /dist
@@ -16,9 +18,12 @@
 
 .sass-cache
 /mapit/static/mapit/css
+gis_data
 
 # This is the name that the install notes suggest be used for the virtualenv
 .venv
+
+mapit_it/tab_CAP.csv
 
 .DS_Store
 django_mapit.egg-info

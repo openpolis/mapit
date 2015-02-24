@@ -84,7 +84,7 @@ set_locale() {
 }
 
 install_comfy_packages() {
-    echo -n "Installing packages to have a comfortable work environment... "
+    echo -n "Installing packages to have a comfortable work environment (vim, tmux, ...) "
     sudo apt-get install -qq -y vim tmux >/dev/null
     echo $DONE_MSG
 }
@@ -175,7 +175,7 @@ start_uwsgi() {
     sudo chown www-data /var/log/uwsgi >/dev/null
 
     # first uwsgi start
-    /usr/local/bin/uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data --daemonize=/var/log/uwsgi/emperor.log >/dev/null
+    sudo /usr/local/bin/uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data --daemonize=/var/log/uwsgi/emperor.log >/dev/null
     echo $DONE_MSG
 }
 
@@ -209,28 +209,6 @@ create_database() {
     psql -Upostgres mapit -c "CREATE EXTENSION postgis_topology;"
     echo $DONE_MSG
 }
-create_virtualenv() {
-    echo -n "Creating virtualenv"
-    pushd $VENVS_DIR
-    echo -n "mkvirtualenv"
-    virtualenv mapit
-cat > $VENVS_DIR/mapit/.project << EOF
-/home/mapit
-EOF
-    source $VENVS_DIR/mapit/bin/activate
-    pip install ipython readline
-    popd >/dev/null
-    echo $DONE_MSG
-}
-
-update_virtualenv() {
-    echo -n "Updating virtualenv"
-    source $VENVS_DIR/mapit/bin/activate
-    pushd $DIRECTORY
-    pip install -r requirements.txt
-    popd >/dev/null
-    echo $DONE_MSG
-}
 
 create_resources_path() {
     echo -n "Creating resources path"
@@ -253,16 +231,6 @@ install_sass_ruby() {
     sudo gem install sass >/dev/null
     echo $DONE_MSG
 }
-
-prepare_css() {
-    echo -n "Preparing CSS"
-    pushd $DIRECTORY >/dev/null
-    bin/mapit_make_css >/dev/null
-    python manage.py collectstatic --noinput >/dev/null
-    popd >/dev/null
-    echo $DONE_MSG
-}
-
 
 
 configure_uwsgi() {
@@ -347,8 +315,7 @@ EOF
 }
 
 
-functions invocation
-
+# functions invocation
 
 check_distribution
 update_package_lists
@@ -367,23 +334,15 @@ install_python27
 install_virtualenv
 
 install_uwsgi
-start_uwsgi
-
-if [ ! -d "$VENVS_DIR/mapit" ]
-then
-    create_virtualenv
-fi
-update_virtualenv
-
 create_resources_path
 
 configure_postgres
-if ! psql -Upostgres -l | grep mapit | wc -l
+if ! psql -Upostgres -l | grep mapit
 then
     create_database
 fi
 
+start_uwsgi
 configure_uwsgi
 configure_nginx
 
-prepare_css

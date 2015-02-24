@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # abort on any errors
 set -e
@@ -17,21 +17,28 @@ if [ "$(echo -e '1.7\n'$virtualenv_version | sort -V | head -1)" = '1.7' ]; then
     virtualenv_args="--system-site-packages"
 fi
 
-virtualenv_dir='../virtualenv-mapit'
+virtualenvs_dir='/home/virtualenvs'
+virtualenv_dir="$virtualenvs_dir/mapit"
 virtualenv_activate="$virtualenv_dir/bin/activate"
 
+# create virtualenv if non-existing
 if [ ! -f "$virtualenv_activate" ]
 then
     virtualenv $virtualenv_args $virtualenv_dir
+    cat > $virtualenv_dir/.project << EOF
+    /home/mapit
+EOF
 fi
 
 source $virtualenv_activate
+cd /home/mapit
 
 # Upgrade pip to a secure version
-# curl -L -s https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
+curl -L -s https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 # Revert to the line above once we can get a newer setuptools from Debian, or
 # pip ceases to need such a recent one.
-curl -L -s https://raw.github.com/mysociety/commonlib/master/bin/get_pip.bash | bash
+# curl -L -s https://raw.github.com/mysociety/commonlib/master/bin/get_pip.bash | bash
+
 
 # Install all the packages
 pip install -e .
