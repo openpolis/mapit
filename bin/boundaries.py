@@ -93,6 +93,26 @@ def get_query_relations_and_ways(required_tags):
   <print from="_" limit="" mode="body" order="id"/>
 </osm-script>""" % (has_kv, has_kv)
 
+def get_italy_query_relations_and_ways(required_tags):
+    """
+    Get query for relations and ways, limited to those having
+    ref:ISTAT tag, which selects only italian administrative boundaries
+    """
+    has_kv = "\n".join('      <has-kv k="%s" modv="" v="%s"/>' % (k, v)
+                       for k, v in required_tags.items())
+    return """<osm-script timeout="3600">
+  <union into="_">
+    <query into="_" type="relation">
+        <has-kv k="ref:ISTAT" modv="" regv=".*"/>
+%s
+    </query>
+    <query into="_" type="way">
+        <has-kv k="ref:ISTAT" modv="" regv=".*"/>
+%s
+    </query>
+  </union>
+  <print from="_" limit="" mode="body" order="id"/>
+</osm-script>""" % (has_kv, has_kv)
 
 def get_from_overpass(query_xml, filename):
     if config.get('LOCAL_OVERPASS'):
