@@ -1,5 +1,3 @@
-import json
-
 from django.conf import settings
 from django.test import TestCase
 from django.contrib.gis.geos import Polygon, Point
@@ -8,6 +6,7 @@ from django.utils.six.moves import urllib
 from mapit import utils, models
 
 from mapit_gb import countries
+from mapit.tests.utils import get_content
 
 
 def url_postcode(pc):
@@ -42,6 +41,16 @@ class GBViewsTest(TestCase):
             generation_high=self.generation,
         )
 
+        code_type = models.CodeType.objects.create(
+            code='CodeType',
+            description='CodeType description',
+        )
+        models.Code.objects.create(
+            area=self.area,
+            type=code_type,
+            code='CODE',
+        )
+
         polygon = Polygon(((-5, 50), (-5, 55), (1, 55), (1, 50), (-5, 50)), srid=4326)
         polygon.transform(settings.MAPIT_AREA_SRID)
         self.shape = models.Geometry.objects.create(
@@ -52,7 +61,7 @@ class GBViewsTest(TestCase):
         pc = self.postcode.postcode
         url = '/postcode/%s' % urllib.parse.quote(pc)
         response = self.client.get(url)
-        content = json.loads(response.content.decode('utf-8'))
+        content = get_content(response)
 
         in_gb_coords = self.postcode.location.transform(27700, clone=True)
         pc = countries.get_postcode_display(self.postcode.postcode)
@@ -74,7 +83,9 @@ class GBViewsTest(TestCase):
                     'generation_high': self.generation.id,
                     'country': '',
                     'country_name': '-',
-                    'codes': {},
+                    'codes': {
+                        'CodeType': 'CODE',
+                    },
                     'all_names': {},
                 }
             }
@@ -89,7 +100,7 @@ class GBViewsTest(TestCase):
     def test_partial_json(self):
         url = '/postcode/partial/SW1A'
         response = self.client.get(url)
-        content = json.loads(response.content.decode('utf-8'))
+        content = get_content(response)
         countries.get_postcode_display(self.postcode.postcode)
         in_gb_coords = self.postcode.location.transform(27700, clone=True)
         self.assertDictEqual(content, {
@@ -109,7 +120,7 @@ class GBViewsTest(TestCase):
     def test_nearest_json(self):
         url = '/nearest/4326/%f,%f' % self.postcode.location.coords
         response = self.client.get(url)
-        content = json.loads(response.content.decode('utf-8'))
+        content = get_content(response)
         pc = countries.get_postcode_display(self.postcode.postcode)
         in_gb_coords = self.postcode.location.transform(27700, clone=True)
         self.assertDictEqual(content, {

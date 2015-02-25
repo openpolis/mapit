@@ -24,7 +24,7 @@ except:
 # WGS84. Optional, defaults to 4326.
 MAPIT_AREA_SRID = int(config.get('AREA_SRID', 4326))
 
-# Country is currently one of GB, NO, or KE. Optional; country specific things
+# Country is currently one of GB, NO, KE or ZA. Optional; country specific things
 # won't happen if not set.
 MAPIT_COUNTRY = config.get('COUNTRY', '')
 
@@ -96,15 +96,27 @@ ALLOWED_HOSTS = ['*']
 if MAPIT_COUNTRY == 'GB':
     TIME_ZONE = 'Europe/London'
     LANGUAGE_CODE = 'en-gb'
+    POSTCODES_AVAILABLE = True
 elif MAPIT_COUNTRY == 'NO':
     TIME_ZONE = 'Europe/Oslo'
     LANGUAGE_CODE = 'no'
+    POSTCODES_AVAILABLE = True
 elif MAPIT_COUNTRY == 'IT':
     TIME_ZONE = 'Europe/Rome'
     LANGUAGE_CODE = 'it'
+    POSTCODES_AVAILABLE = True
+elif MAPIT_COUNTRY == 'ZA':
+    TIME_ZONE = 'Africa/Johannesburg'
+    LANGUAGE_CODE = 'en-za'
+    POSTCODES_AVAILABLE = False
+elif MAPIT_COUNTRY == 'Global':
+    TIME_ZONE = 'Europe/London'
+    LANGUAGE_CODE = 'en'
+    POSTCODES_AVAILABLE = False
 else:
     TIME_ZONE = 'Europe/London'
     LANGUAGE_CODE = 'en'
+    POSTCODES_AVAILABLE = True
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -153,8 +165,10 @@ STATICFILES_FINDERS = (
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
+    ('django.template.loaders.cached.Loader', (
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+    )),
 )
 
 # UpdateCacheMiddleware does ETag setting, and
@@ -163,8 +177,9 @@ TEMPLATE_LOADERS = (
 # similar ETag code in CommonMiddleware.
 USE_ETAGS = False
 
-MIDDLEWARE_CLASSES = (
-    'django.middleware.gzip.GZipMiddleware',
+MIDDLEWARE_CLASSES = [
+    'mapit.middleware.gzip.GZipMiddleware',
+    # Not 'django.middleware.gzip.GZipMiddleware' to work around Django #24242
     'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -174,7 +189,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.cache.FetchFromCacheMiddleware',
     'mapit.middleware.JSONPMiddleware',
     'mapit.middleware.ViewExceptionMiddleware',
-)
+]
+if django.get_version() >= '1.7':
+    MIDDLEWARE_CLASSES.append('django.contrib.auth.middleware.SessionAuthenticationMiddleware')
 
 ROOT_URLCONF = 'project.urls'
 
@@ -195,6 +212,16 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'mapit.context_processors.analytics',
 )
 
+if django.get_version() >= '1.8':
+    TEMPLATES = [ {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': TEMPLATE_DIRS,
+        'OPTIONS': {
+            'context_processors': map(lambda x: x.replace('django.core', 'django.template'), TEMPLATE_CONTEXT_PROCESSORS),
+            'loaders': TEMPLATE_LOADERS,
+        },
+    } ]
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -205,7 +232,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'mapit',
 ]
-if django.VERSION < (1, 7):
+if django.get_version() < '1.7':
     INSTALLED_APPS.append('south')
 
 if MAPIT_COUNTRY:

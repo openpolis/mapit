@@ -1,10 +1,6 @@
 import re
-from psycopg2.extensions import QueryCanceledError
 from psycopg2 import InternalError
-try:
-    from django.db.utils import DatabaseError
-except:
-    from psycopg2 import DatabaseError
+from django.db.utils import DatabaseError
 
 try:
     from osgeo import gdal
@@ -13,53 +9,62 @@ except ImportError:
     PYGDAL = False
 
 from django.contrib.gis.geos import Point
+from django.db.models.query import QuerySet
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import resolve, reverse
 from django.conf import settings
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 
 from mapit.models import Area, Generation, Geometry, Code, Name, TransformError
-from mapit.shortcuts import output_json, output_html, render, get_object_or_404, set_timeout
+from mapit.shortcuts import output_json, output_html, get_object_or_404, set_timeout
 from mapit.middleware import ViewException
 from mapit.ratelimitcache import ratelimit
 from mapit import countries
+from mapit.iterables import iterdict
 
 
 def add_codes(areas):
+    """Given an iterable of areas, return an iterator of those areas with codes
+    attached. We don't use prefetch_related because this can use a lot of
+    memory."""
     codes = Code.objects.select_related('type').filter(area__in=areas)
     lookup = {}
-    for code in codes:
-        lookup.setdefault(code.area_id, []).append(code)
+    for code in codes.iterator():
+        lookup.setdefault(code.area_id, {})[code.type.code] = code.code
+    if isinstance(areas, QuerySet):
+        if hasattr(countries, 'sorted_areas'):
+            areas = countries.sorted_areas(areas)
+        areas = areas.iterator()
     for area in areas:
         if area.id in lookup:
-            area.code_list = lookup[area.id]
-    return areas
+            area.all_codes = lookup[area.id]
+        yield area
 
 
 def output_areas(request, title, format, areas, **kwargs):
     areas = add_codes(areas)
     if format == 'html':
         return output_html(request, title, areas, **kwargs)
-    return output_json(dict((area.id, area.as_dict()) for area in areas))
+    return output_json(iterdict((area.id, area.as_dict()) for area in areas))
 
 
 def query_args(request, format, type=None):
     try:
-        generation = int(request.REQUEST.get('generation', 0))
+        generation = int(request.GET.get('generation', 0))
     except ValueError:
         raise ViewException(format, 'Bad generation specified', 400)
     if not generation:
         generation = Generation.objects.current().id
 
     try:
-        min_generation = int(request.REQUEST.get('min_generation', 0))
+        min_generation = int(request.GET.get('min_generation', 0))
     except ValueError:
         raise ViewException(format, 'Bad min_generation specified', 400)
     if not min_generation:
         min_generation = generation
 
     if type is None:
-        type = request.REQUEST.get('type', '')
+        type = request.GET.get('type', '')
 
     args = {}
     if min_generation > -1:
@@ -175,19 +180,14 @@ def area_intersect(query_type, title, request, area_id, format):
         raise ViewException(format, 'No polygons found', 404)
 
     generation = Generation.objects.current()
-    types = [_f for _f in request.REQUEST.get('type', '').split(',') if _f]
+    types = [_f for _f in request.GET.get('type', '').split(',') if _f]
 
     set_timeout(format)
     try:
         # Cast to list so that it's evaluated here, and output_areas doesn't get
         # confused with a RawQuerySet
         areas = list(Area.objects.intersect(query_type, area, types, generation))
-    except QueryCanceledError:
-        raise ViewException(
-            format, 'That query was taking too long to compute - '
-            'try restricting to a specific type, if you weren\'t already doing so.', 500)
     except DatabaseError as e:
-        # Django 1.2+ catches QueryCanceledError and throws its own DatabaseError instead
         if 'canceling statement due to statement timeout' not in e.args[0]:
             raise
         raise ViewException(
@@ -330,7 +330,7 @@ def areas_by_point(request, srid, x, y, bb=False, format='json'):
     method = 'box' if bb and bb != 'polygon' else 'polygon'
 
     args = query_args(request, format)
-    type = request.REQUEST.get('type', '')
+    type = request.GET.get('type', '')
 
     if type and method == 'polygon':
         args = dict(("area__%s" % k, v) for k, v in args.items())
@@ -392,5 +392,6 @@ def deal_with_POST(request, call='areas'):
     if not url:
         return output_json({'error': 'No content specified'}, code=400)
     view, args, kwargs = resolve('/%s/%s' % (call, url))
+    request.GET = request.POST
     kwargs['request'] = request
     return view(*args, **kwargs)

@@ -5,9 +5,8 @@ memcached
 python-virtualenv
 ruby-sass
 
-python-django
-python-django-south
 python-psycopg2
+python-shapely
 python-yaml
 python-memcache
 python-gdal
