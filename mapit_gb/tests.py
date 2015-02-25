@@ -59,7 +59,7 @@ class GBViewsTest(TestCase):
 
     def test_postcode_json(self):
         pc = self.postcode.postcode
-        url = '/postcode/%s' % urllib.parse.quote(pc)
+        url = '/en/postcode/%s' % urllib.parse.quote(pc)
         response = self.client.get(url)
         content = get_content(response)
 
@@ -93,12 +93,12 @@ class GBViewsTest(TestCase):
 
     def test_postcode_json_link(self):
         pc = self.postcode.postcode
-        url = '/postcode/%s.html' % urllib.parse.quote(pc)
+        url = '/en/postcode/%s.html' % urllib.parse.quote(pc)
         response = self.client.get(url)
-        self.assertContains(response, '"/postcode/%s"' % url_postcode(pc))
+        self.assertContains(response, '/postcode/%s"' % url_postcode(pc))
 
     def test_partial_json(self):
-        url = '/postcode/partial/SW1A'
+        url = '/en/postcode/partial/SW1A'
         response = self.client.get(url)
         content = get_content(response)
         countries.get_postcode_display(self.postcode.postcode)
@@ -113,12 +113,12 @@ class GBViewsTest(TestCase):
         })
 
     def test_partial_json_link(self):
-        url = '/postcode/partial/SW1A.html'
+        url = '/en/postcode/partial/SW1A.html'
         response = self.client.get(url)
-        self.assertContains(response, '"/postcode/partial/SW1A"')
+        self.assertContains(response, '/postcode/partial/SW1A"')
 
     def test_nearest_json(self):
-        url = '/nearest/4326/%f,%f' % self.postcode.location.coords
+        url = '/en/nearest/4326/%f,%f' % self.postcode.location.coords
         response = self.client.get(url)
         content = get_content(response)
         pc = countries.get_postcode_display(self.postcode.postcode)
@@ -136,7 +136,7 @@ class GBViewsTest(TestCase):
         })
 
     def test_nearest_json_link(self):
-        url = '/nearest/4326/%f,%f.html' % self.postcode.location.coords
+        url = '/en/nearest/4326/%f,%f.html' % self.postcode.location.coords
         response = self.client.get(url)
         pc = self.postcode.postcode
-        self.assertContains(response, '"/postcode/%s"' % url_postcode(pc))
+        self.assertContains(response, '/postcode/%s"' % url_postcode(pc))

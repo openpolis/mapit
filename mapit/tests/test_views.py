@@ -65,11 +65,11 @@ class AreaViewsTest(TestCase):
             postcode='P', location=Point(-3.5, 51.5))
 
     def test_areas_by_latlon(self):
-        response = self.client.get('/point/latlon/51.5,-3.5.json')
-        self.assertRedirects(response, '/point/4326/-3.5,51.5.json')
+        response = self.client.get('/en/point/latlon/51.5,-3.5.json')
+        self.assertRedirects(response, '/en/point/4326/-3.5,51.5.json')
 
     def test_areas_by_point(self):
-        url = '/point/4326/-3.4,51.5.json'
+        url = '/en/point/4326/-3.4,51.5.json'
         response = self.client.get(url)
 
         content = get_content(response)
@@ -80,24 +80,24 @@ class AreaViewsTest(TestCase):
             )
 
     def test_front_page(self):
-        response = self.client.get('/')
+        response = self.client.get('/en/')
         self.assertContains(response, 'MapIt')
 
     def test_json_links(self):
         id = self.big_area.id
-        url = '/area/%d/covers.html?type=SML' % id
+        url = '/en/area/%d/covers.html?type=SML' % id
         response = self.client.get(url)
-        self.assertContains(response, '/area/%d/covers?type=SML' % id)
+        self.assertContains(response, '/en/area/%d/covers?type=SML' % id)
 
     def test_example_postcode(self):
         id = self.small_area_1.id
-        url = '/area/%d/example_postcode' % id
+        url = '/en/area/%d/example_postcode' % id
         response = self.client.get(url)
         content = get_content(response)
         self.assertEqual(content, self.postcode.postcode)
 
     def test_nearest_with_bad_srid(self):
-        url = '/nearest/84/0,0.json'
+        url = '/en/nearest/84/0,0.json'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
         content = json.loads(response.content.decode('utf-8'))
