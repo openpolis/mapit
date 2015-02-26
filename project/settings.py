@@ -183,7 +183,8 @@ TEMPLATE_LOADERS = (
 USE_ETAGS = False
 
 MIDDLEWARE_CLASSES = [
-    'django.middleware.locale.LocaleMiddleware',
+    # 'django.middleware.locale.LocaleMiddleware',
+    'solid_i18n.middleware.SolidLocaleMiddleware',
     'mapit.middleware.gzip.GZipMiddleware',
     # Not 'django.middleware.gzip.GZipMiddleware' to work around Django #24242
     'django.middleware.http.ConditionalGetMiddleware',
