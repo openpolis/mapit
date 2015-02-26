@@ -57,6 +57,6 @@ if (settings.MAPIT_COUNTRY == 'GB'):
         url(r'^', include('mapit_gb.urls')),
     )
 if (settings.MAPIT_COUNTRY == 'IT'):
-    urlpatterns += patterns(
-        '', (r'^', include('mapit_it.urls')),
+    urlpatterns.append(
+        url(r'^', include('mapit_it.urls')),
     )

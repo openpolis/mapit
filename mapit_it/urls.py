@@ -1,6 +1,6 @@
 from django.conf.urls import patterns
 
-from mapit.shortcuts import render
+from django.shortcuts import render
 
 urlpatterns = patterns(
     '',
