@@ -98,12 +98,12 @@ msgid "Example:"
 msgstr "Esempio:"
 
 #: templates/mapit/api/point-example-nearest.html:4
-msgid "Example of postcode nearest to (41.8981,12.5042)"
-msgstr "Esempio di codice postale più vicino a (41.8981,12.5042)"
+msgid "Example of postcode nearest to (12.5042,41.8981)"
+msgstr "Esempio di codice postale più vicino a (12.5042,41.8981)"
 
 #: templates/mapit/api/point-example.html:4
-msgid "Example of areas containing (41.8981,12.5042)"
-msgstr "Esempio di aree che contengono (41.8981,12.5042)"
+msgid "Example of areas containing (12.5042,41.8981)"
+msgstr "Esempio di aree che contengono (12.5042,41.8981)"
 
 #: templates/mapit/api/postcode-example-partial.html:3
 msgid "Example"
