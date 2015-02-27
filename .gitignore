@@ -5,13 +5,17 @@
 /conf/httpd.conf
 /conf/httpd.conf.deployed
 /web/down.html
-/data/cache
+/data/cache-with-political
+/data/new-cache
+/gis_data
 /MANIFEST
 /build
 /dist
 /django_mapit.egg-info
 *~
 /.coverage
+
+/mapit_it/tab_CAP.csv
 
 .sass-cache
 /mapit/static/mapit/css
