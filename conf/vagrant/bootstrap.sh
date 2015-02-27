@@ -143,27 +143,20 @@ install_uwsgi() {
     sudo pip install uwsgi >/dev/null
     echo $DONE_MSG
 
-    # add uwsgi startup instructions to /etc/rc.local
-    if ! egrep "uwsgi" "/etc/rc.local"
+    # add uwsgi to upstart
+    if ! egrep "uwsgi" "/etc/init"
     then
-        echo -n "Configuring rc.local to add uwsgi startup"
-        cat > rc.local << EOF
-#!/bin/sh -e
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
-/usr/local/bin/uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data --daemonize=/var/log/uwsgi/emperor.log
-exit 0
+        echo -n "Adding uwsgi to upstart"
+        cat > uwsgi.conf << EOF
+# uWSGI Emperor
+
+description "uwsgi emperor"
+start on runlevel [2345]
+stop on runlevel [06]
+
+exec /usr/local/bin/uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data --daemonize=/var/log/uwsgi/emperor.log
 EOF
-        sudo mv rc.local /etc/rc.local
+        sudo mv uwsgi.conf /etc/init
         echo $DONE_MSG
     fi
 }
