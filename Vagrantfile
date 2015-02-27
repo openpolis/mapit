@@ -8,7 +8,7 @@ Vagrant.configure(2) do |config|
   config.vm.network :forwarded_port, host: 8000, guest: 80
 
   # provisioning script
-  config.vm.provision :shell, path: "conf/bootstrap.sh", privileged: false
+  config.vm.provision :shell, path: "conf/vagrant_bootstrap.sh", privileged: false
 
   # disable standard sync and sync to /home/mapit,
   # so that it's more similar to deploy
