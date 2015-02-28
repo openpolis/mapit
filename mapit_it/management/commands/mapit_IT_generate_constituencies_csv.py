@@ -131,7 +131,7 @@ class Command(NoArgsCommand):
             { 'name': 'Nord-occidentale',
               'regions': ["Valle d'Aosta", "Liguria", "Piemonte", "Lombardia"] },
             { 'name': 'Nord-orientale',
-              'regions': ["Emilia-Romagna", "Friuli Venezia Giulia", "Trentino-Alto adige", "Veneto"] },
+              'regions': ["Emilia-Romagna", "Friuli Venezia Giulia", "Trentino-Alto Adige", "Veneto"] },
             { 'name': 'Centrale',
               'regions': ["Toscana", "Umbria", "Marche", "Lazio"] },
             { 'name': 'Meridionale',
