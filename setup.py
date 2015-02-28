@@ -29,7 +29,8 @@ setup(
         'psycopg2',
         'PyYAML',
         'Shapely',
-        'solid-i18n'
+        'solid-i18n',
+        'django_extensions',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
